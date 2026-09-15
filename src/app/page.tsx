@@ -1,14 +1,14 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useEffect, useState } from "react";
-
-const navigation = ["Genel Bakış", "Faturalar", "Raporlar", "Ayarlar"];
+import Sidebar, { type NavigationItem } from "@/components/Sidebar";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileError, setFileError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [activeSection, setActiveSection] = useState("Genel Bakış");
 
   useEffect(() => {
     return () => {
@@ -41,24 +41,17 @@ export default function Home() {
     handleFile(event.dataTransfer.files[0]);
   }
 
+  function handleSectionSelect(item: NavigationItem) {
+    setActiveSection(item.label);
+  }
+
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand"><span className="brand-mark">V</span><span>vento<span className="brand-accent">.</span></span></div>
-        <div className="workspace-label">ÇALIŞMA ALANI</div>
-        <nav className="navigation" aria-label="Ana navigasyon">
-          {navigation.map((item, index) => (
-            <button className={`nav-item ${index === 0 ? "active" : ""}`} key={item} type="button">
-              <span className="nav-icon">{["⌂", "▤", "◒", "⚙"][index]}</span>{item}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-footer"><span className="status-dot" /> Sistemler çalışıyor</div>
-      </aside>
+      <Sidebar activeItem={activeSection} onItemSelect={handleSectionSelect} />
 
       <main className="content">
         <header className="topbar">
-          <div><p className="eyebrow">PAZARTESİ, 15 EYLÜL 2026</p><h1>Günaydın, Burkay.</h1></div>
+          <div><p className="eyebrow">{activeSection.toUpperCase()} · PAZARTESİ, 15 EYLÜL 2026</p><h1>Günaydın, Burkay.</h1></div>
           <div className="profile"><span className="profile-avatar">BŞ</span><span><strong>Burkay Şentürk</strong><small>Yönetici</small></span><span className="chevron">⌄</span></div>
         </header>
 
