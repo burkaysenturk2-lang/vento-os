@@ -11,6 +11,8 @@ type GodModeResult = {
   whatsappMsg: string;
 };
 
+const GUARANTEED_VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+
 export default function GodModeEngine() {
   const [productImage, setProductImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -19,6 +21,33 @@ export default function GodModeEngine() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [statusStep, setStatusStep] = useState('');
   const [result, setResult] = useState<GodModeResult | null>(null);
+  const [notificationStatus, setNotificationStatus] = useState('');
+
+  const sendRealNotification = async (num: string, prod: string) => {
+    try {
+      const response = await fetch('/api/send-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: num, productName: prod }),
+      });
+      const data = await response.json();
+      return data.success === true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  };
+
+  const handleNotificationApproval = async () => {
+    if (!phoneNumber.trim()) {
+      setNotificationStatus('Onay için telefon numarası girin.');
+      return;
+    }
+
+    setNotificationStatus('Bildirim gönderiliyor...');
+    const success = await sendRealNotification(phoneNumber.trim(), productName.trim());
+    setNotificationStatus(success ? 'Onay bildirimi gönderildi.' : 'Bildirim gönderilemedi.');
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -48,7 +77,7 @@ export default function GodModeEngine() {
     setTimeout(() => {
       setResult({
         product: productName,
-        videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-39875-large.mp4',
+        videoUrl: GUARANTEED_VIDEO_URL,
         hooks: [
           `🔥 Neden herkes ${productName} konuşuyor?`,
           `⚡ ${productName} ile tarzını baştan yarat!`,
@@ -166,6 +195,14 @@ export default function GodModeEngine() {
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-medium flex items-center gap-2">
                 <span>📲</span> {result.whatsappMsg}
               </div>
+              <button
+                type="button"
+                onClick={handleNotificationApproval}
+                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-medium hover:bg-emerald-700 transition text-sm"
+              >
+                ✓ WhatsApp onay bildirimini gönder
+              </button>
+              {notificationStatus && <p className="text-xs text-neutral-600" role="status">{notificationStatus}</p>}
             </div>
           </div>
         </div>
