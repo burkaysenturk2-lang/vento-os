@@ -5,6 +5,7 @@ import Image from "next/image";
 import Sidebar, { type NavigationItem } from "@/components/Sidebar";
 import InvoiceAnalyzer from "@/components/InvoiceAnalyzer";
 import AdGenerator from "@/components/AdGenerator";
+import ProductAnalyzer from "@/components/ProductAnalyzer";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -88,6 +89,7 @@ export default function Home() {
           <div className="panel-heading"><div><p className="eyebrow">BELGE ANALİZİ</p><h3>Fatura sonuçları</h3></div><span className={`result-status ${selectedFile ? "ready" : ""}`}><span />{selectedFile ? "Analize hazır" : "Belge bekleniyor"}</span></div>
           {selectedFile ? <><InvoiceAnalyzer fileName={selectedFile.name} /><AdGenerator /></> : <div className="empty-results"><span className="empty-icon">✦</span><div><strong>Sonuçlar burada görünecek</strong><p>Bir fatura veya fiş yüklediğinde satıcı, tarih ve toplam tutar bilgileri otomatik olarak listelenir.</p></div></div>}
         </section>
+        <ProductAnalyzer />
         <footer className="content-footer">Vento OS <span>v1.0.0</span><span className="footer-right">Güvenli ve şeffaf finans yönetimi</span></footer>
       </main>
     </div>
