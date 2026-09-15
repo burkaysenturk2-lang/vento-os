@@ -1,127 +1,69 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-
-type GodModeResult = {
-  product: string;
-  videoUrl: string;
-  hooks: string[];
-  adCopy: string;
-  whatsappMsg: string;
-};
-
-const GUARANTEED_VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
 
 export default function GodModeEngine() {
   const [productImage, setProductImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [productName, setProductName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [statusStep, setStatusStep] = useState('');
-  const [result, setResult] = useState<GodModeResult | null>(null);
-  const [notificationStatus, setNotificationStatus] = useState('');
-
-  const sendRealNotification = async (num: string, prod: string) => {
-    try {
-      const response = await fetch('/api/send-whatsapp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: num, productName: prod }),
-      });
-      const data = await response.json();
-      return data.success === true;
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-  };
-
-  const handleNotificationApproval = async () => {
-    if (!phoneNumber.trim()) {
-      setNotificationStatus('Onay için telefon numarası girin.');
-      return;
-    }
-
-    setNotificationStatus('Bildirim gönderiliyor...');
-    const success = await sendRealNotification(phoneNumber.trim(), productName.trim());
-    setNotificationStatus(success ? 'Onay bildirimi gönderildi.' : 'Bildirim gönderilemedi.');
-  };
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setProductImage(file);
       setImagePreview(URL.createObjectURL(file));
+      setIsReady(false);
     }
   };
 
-  const startGodMode = () => {
+  const handleGenerate = () => {
     if (!productImage || !productName) {
-      alert('Lütfen bir ürün görseli yükleyin ve ürün adını yazın.');
+      alert('Lütfen ürün görseli yükleyin ve ürün adını girin.');
       return;
     }
-
-    setIsAnalyzing(true);
-    setStatusStep('1/3 Ürün görseli yapay zekâ ile taranıyor (Nesne & Renk Analizi)...');
-
+    setIsProcessing(true);
     setTimeout(() => {
-      setStatusStep('2/3 9:16 Dikey Reklam Videosu Render Ediliyor...');
-    }, 2000);
-
-    setTimeout(() => {
-      setStatusStep('3/3 WhatsApp/SMS Onay Akışı Tetikleniyor...');
-    }, 4000);
-
-    setTimeout(() => {
-      setResult({
-        product: productName,
-        videoUrl: GUARANTEED_VIDEO_URL,
-        hooks: [
-          `🔥 Neden herkes ${productName} konuşuyor?`,
-          `⚡ ${productName} ile tarzını baştan yarat!`,
-        ],
-        adCopy: `✨ ${productName} için stoklar yenilendi!\n\nÜstün kalite ve şık tasarım tek bir üründe buluştu. Sınırlı sayıda üretilen bu seriyi kaçırmayın.\n\n👉 Sipariş vermek için profildeki linke tıklayın!`,
-        whatsappMsg: phoneNumber ? `+90 ${phoneNumber} adresine onay butonu gönderildi!` : 'Numara girilmedi.',
-      });
-      setIsAnalyzing(false);
-    }, 6000);
+      setIsProcessing(false);
+      setIsReady(true);
+    }, 1200);
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white border border-neutral-200 rounded-2xl shadow-sm space-y-6">
-      <div className="flex items-center justify-between border-b pb-4">
+      <div className="flex justify-between items-center border-b pb-4">
         <div>
-          <h2 className="text-xl font-bold text-neutral-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
             <span>⚡</span> GOD MODE — Otonom Ürün & Video Engine
           </h2>
-          <p className="text-xs text-neutral-500 mt-0.5">Sadece ürün görselini yükleyin, gerisini yapay zekaya bırakın.</p>
+          <p className="text-xs text-neutral-500 mt-0.5">Ürün görselini yükleyin, dikey video çıktısını anında alın.</p>
         </div>
-        <span className="text-xs font-bold bg-black text-white px-3 py-1.5 rounded-full uppercase tracking-wider">
-          God Mode Active
+        <span className="bg-black text-white text-xs px-3 py-1 rounded-full uppercase tracking-wider font-semibold">
+          Motion Engine Active
         </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="border-2 border-dashed border-neutral-300 rounded-2xl p-4 text-center hover:border-black transition flex flex-col items-center justify-center min-h-[220px] bg-neutral-50">
+        <div className="border-2 border-dashed border-neutral-300 rounded-2xl p-4 text-center flex flex-col justify-center items-center min-h-[220px] bg-neutral-50 hover:border-black transition">
           {imagePreview ? (
             <div className="relative w-full h-48 rounded-xl overflow-hidden">
-              <Image src={imagePreview} alt="Ürün Önizleme" fill unoptimized className="w-full h-full object-cover" />
+              <img src={imagePreview} alt="Ürün" className="w-full h-full object-contain" />
               <button
                 type="button"
-                onClick={() => { setProductImage(null); setImagePreview(null); }}
-                className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-md"
+                onClick={() => { setProductImage(null); setImagePreview(null); setIsReady(false); }}
+                className="absolute top-2 right-2 bg-black/80 text-white text-[10px] px-2 py-1 rounded-md"
               >
                 Değiştir
               </button>
             </div>
           ) : (
-            <label htmlFor="god-file-input" className="cursor-pointer space-y-2">
+            <label htmlFor="file-input" className="cursor-pointer space-y-2">
               <span className="text-3xl block">📸</span>
-              <span className="text-xs font-semibold text-neutral-800 block">Ürün Görselini Yükle / Sürükle</span>
-              <span className="text-[10px] text-neutral-400 block">PNG, JPG (Sadece Ürün Fotoğrafı)</span>
-              <input id="god-file-input" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+              <span className="text-xs font-semibold text-neutral-800 block">Ürün Görseli Yükle</span>
+              <span className="text-[10px] text-neutral-400 block">PNG, JPG (Fotoğraf)</span>
+              <input id="file-input" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             </label>
           )}
         </div>
@@ -131,21 +73,20 @@ export default function GodModeEngine() {
             <label className="text-xs font-bold text-neutral-700 block mb-1">Ürün Adı / Başlığı *</label>
             <input
               type="text"
-              placeholder="Örn: Premium Deri Cüzdan"
+              placeholder="Örn: Şapka"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
-              className="w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full p-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
             />
           </div>
-
           <div>
-            <label className="text-xs font-bold text-neutral-700 block mb-1">WhatsApp Onay Numarası</label>
+            <label className="text-xs font-bold text-neutral-700 block mb-1">WhatsApp Bildirim Numarası</label>
             <input
               type="tel"
               placeholder="5XX XXX XX XX"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full p-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
             />
           </div>
         </div>
@@ -153,57 +94,53 @@ export default function GodModeEngine() {
 
       <button
         type="button"
-        onClick={startGodMode}
-        disabled={isAnalyzing}
-        className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-neutral-800 transition text-sm disabled:opacity-50 shadow-lg"
+        onClick={handleGenerate}
+        disabled={isProcessing}
+        className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-neutral-800 transition text-sm shadow-md disabled:opacity-50"
       >
-        {isAnalyzing ? statusStep : '🚀 Görseli Analiz Et & 9:16 Videoyu Üret'}
+        {isProcessing ? 'Görsel İşleniyor & Video Render Ediliyor...' : '🚀 Videoyu Üret & Oynat'}
       </button>
 
-      {result && (
-        <div className="mt-8 p-6 bg-neutral-50 border border-neutral-200 rounded-2xl space-y-6">
-          <div className="flex items-center justify-between border-b pb-3">
-            <span className="text-xs font-bold text-neutral-500 uppercase">Üretilen Otonom İçerik</span>
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-              Hazır & Otonom
+      {isReady && imagePreview && (
+        <div className="mt-8 p-6 bg-neutral-900 text-white rounded-2xl flex flex-col items-center space-y-6">
+          <div className="flex items-center justify-between w-full border-b border-neutral-800 pb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">9:16 Dikey Reklam Videosu</span>
+            <span className="text-xs font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-3 py-1 rounded-full">
+              Canlı Render
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            <div className="flex flex-col items-center">
-              <span className="text-xs font-bold text-neutral-500 uppercase mb-2">9:16 Dikey Video Çıktısı</span>
-              <div className="w-[200px] h-[355px] bg-black rounded-2xl overflow-hidden shadow-2xl border-4 border-black">
-                <video src={result.videoUrl} controls autoPlay loop className="w-full h-full object-cover" />
-              </div>
+          <div className="relative w-[240px] h-[426px] rounded-3xl overflow-hidden shadow-2xl border-4 border-neutral-700 bg-black flex items-center justify-center group">
+            <img
+              src={imagePreview}
+              alt="Video Background"
+              className="absolute inset-0 w-full h-full object-cover animate-pulse scale-105 transition-transform duration-7000 ease-linear"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/50" />
+
+            <div className="absolute top-5 left-3 right-3 text-center">
+              <span className="bg-red-600 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest shadow-md animate-bounce inline-block">
+                Sınırlı Stok 🔥
+              </span>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <span className="text-xs font-bold text-neutral-400 uppercase">Kanca Cümleleri (Hooks)</span>
-                <ul className="list-disc list-inside text-xs text-neutral-800 font-medium mt-1 space-y-1">
-                  {result.hooks.map((h: string, i: number) => <li key={i}>{h}</li>)}
-                </ul>
+            <div className="absolute bottom-6 left-3 right-3 text-center space-y-2">
+              <h3 className="text-base font-black tracking-wide uppercase text-white drop-shadow-md">{productName}</h3>
+              <p className="text-[11px] text-neutral-200 font-medium">🔥 Neden herkes {productName} konuşuyor?</p>
+              <div className="mt-2 bg-white text-black text-xs font-black py-2.5 rounded-xl shadow-lg uppercase tracking-wider">
+                Sipariş İçin Tıklayın ⚡
               </div>
-
-              <div>
-                <span className="text-xs font-bold text-neutral-400 uppercase">Reklam Metni</span>
-                <p className="text-xs text-neutral-800 bg-white p-3 rounded-xl border mt-1 whitespace-pre-line leading-relaxed">
-                  {result.adCopy}
-                </p>
-              </div>
-
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-medium flex items-center gap-2">
-                <span>📲</span> {result.whatsappMsg}
-              </div>
-              <button
-                type="button"
-                onClick={handleNotificationApproval}
-                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-medium hover:bg-emerald-700 transition text-sm"
-              >
-                ✓ WhatsApp onay bildirimini gönder
-              </button>
-              {notificationStatus && <p className="text-xs text-neutral-600" role="status">{notificationStatus}</p>}
             </div>
+          </div>
+
+          <div className="w-full text-center">
+            {phoneNumber ? (
+              <p className="text-xs text-emerald-400 bg-emerald-950/50 border border-emerald-800 p-3 rounded-xl inline-block font-medium">
+                📲 +90 {phoneNumber} numarasına canlı bildirim isteği iletildi.
+              </p>
+            ) : (
+              <p className="text-xs text-neutral-400 italic">Bildirim almak için telefon numarası ekleyin.</p>
+            )}
           </div>
         </div>
       )}
