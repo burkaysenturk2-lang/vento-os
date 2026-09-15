@@ -1,7 +1,10 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useEffect, useState } from "react";
+import Image from "next/image";
 import Sidebar, { type NavigationItem } from "@/components/Sidebar";
+import InvoiceAnalyzer from "@/components/InvoiceAnalyzer";
+import AdGenerator from "@/components/AdGenerator";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -67,7 +70,7 @@ export default function Home() {
           <div className="upload-panel">
             <div className="panel-heading"><div><p className="eyebrow">HIZLI İŞLEM</p><h3>Yeni fatura ekle</h3></div><span className="panel-number">01</span></div>
             <div className={`dropzone ${isDragging ? "dragging" : ""}`} onDragEnter={(event) => { event.preventDefault(); setIsDragging(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop}>
-              {previewUrl ? <img className="document-preview" src={previewUrl} alt="Seçilen fatura önizlemesi" /> : <div className="upload-icon">↑</div>}
+              {previewUrl ? <Image className="document-preview rounded-lg border" src={previewUrl} alt="Fatura Önizlemesi" width={400} height={300} unoptimized /> : <div className="upload-icon">↑</div>}
               <h4>{selectedFile ? selectedFile.name : "Fatura veya fişini ekle"}</h4>
               <p>{selectedFile ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB · Analize hazır` : "Kamerayla çek veya cihazından seç"}</p>
               <div className="upload-actions">
@@ -83,7 +86,7 @@ export default function Home() {
         </section>
         <section className="results-panel">
           <div className="panel-heading"><div><p className="eyebrow">BELGE ANALİZİ</p><h3>Fatura sonuçları</h3></div><span className={`result-status ${selectedFile ? "ready" : ""}`}><span />{selectedFile ? "Analize hazır" : "Belge bekleniyor"}</span></div>
-          {selectedFile ? <div className="result-content"><div className="result-file"><span className="file-type">{selectedFile.type === "application/pdf" ? "PDF" : "IMG"}</span><div><strong>{selectedFile.name}</strong><p>Belge başarıyla eklendi · Otomatik okuma bekliyor</p></div></div><div className="result-fields"><div><span>Satıcı</span><strong>--</strong></div><div><span>Fatura tarihi</span><strong>--</strong></div><div><span>Toplam tutar</span><strong>--</strong></div><button type="button" className="analyze-button">Belgeyi analiz et <span>→</span></button></div></div> : <div className="empty-results"><span className="empty-icon">✦</span><div><strong>Sonuçlar burada görünecek</strong><p>Bir fatura veya fiş yüklediğinde satıcı, tarih ve toplam tutar bilgileri otomatik olarak listelenir.</p></div></div>}
+          {selectedFile ? <><InvoiceAnalyzer fileName={selectedFile.name} /><AdGenerator /></> : <div className="empty-results"><span className="empty-icon">✦</span><div><strong>Sonuçlar burada görünecek</strong><p>Bir fatura veya fiş yüklediğinde satıcı, tarih ve toplam tutar bilgileri otomatik olarak listelenir.</p></div></div>}
         </section>
         <footer className="content-footer">Vento OS <span>v1.0.0</span><span className="footer-right">Güvenli ve şeffaf finans yönetimi</span></footer>
       </main>
